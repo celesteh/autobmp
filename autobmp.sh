@@ -3,10 +3,12 @@
 file=$1
 dest=$2
 
-size=`wc -c $file | cut -f 1 -d ' '`
+size=`wc -c $file | xargs | cut -f 1 -d ' '`
 ints=`expr $size / 6`
 root=`echo "sqrt($ints)" | bc`
 
+
+# Pad the file to be a square
 x=$root
 y=$root
 #echo "$x x $y"
@@ -19,9 +21,13 @@ while [[ $squared -lt $ints ]];do
     #echo "squared is $squared"
 done
 
+
+
 #echo "expr $squared - $ints"
-diff=`expr $squared - $ints`
-diff=`expr $diff \* 6`
+#diff=`expr $squared - $ints`
+#diff=`expr $diff \* 6`
+
+diff=`expr $squared \* 6`
 
 #echo "diff is $diff"
 
@@ -29,8 +35,8 @@ base=`basename $file`
 temp=`echo "/tmp/$base"`
 cp $file $temp
 
-truncate -s +$diff $temp
-
+#truncate -s +$diff $temp
+dd if=/dev/null of=$temp bs=1 count=1 seek=$diff
 
 size=$x
 size+="x"
@@ -54,6 +60,12 @@ if [[ $extension != "bmp" ]]; then
 fi
 
 #echo $size
-command=`echo "convert -size $size -depth 16 rgb:$temp $dest"`
+#command=`echo "convert -size $size -depth 16 rgb:$temp $dest"`
+command=`echo "magick -size $size -depth 16 rgb:$temp $dest"`
 echo $command
-`$command`
+if [ "$(uname)" == "Darwin" ]; then
+    # Do something under Mac OS X platform
+    export DYLD_LIBRARY_PATH="$MAGICK_HOME/lib" && `$command`
+else
+    `$command`
+fi
