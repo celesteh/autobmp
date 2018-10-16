@@ -1,7 +1,7 @@
 autobmp
 =======
 
-a script to convert .au audio files to .bmp images
+a script to convert .au or raw audio files to .bmp images
 
 requires:
 
